@@ -1,6 +1,7 @@
 <?php
 /*
  * Plugin Name: FPCS Frontend Lost Password
+ * Plugin URI: https://github.com/FPCSJames/fpcs-frontend-lost-password/
  * Version: 1.0.1
  * Description: Add a lost password shortcode for frontend usage.
  * Author: James M. Joyce, Flashpoint Computer Services, LLC
