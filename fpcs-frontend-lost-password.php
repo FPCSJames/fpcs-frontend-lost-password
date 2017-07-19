@@ -13,18 +13,15 @@ if(!defined('ABSPATH')) { exit; }
 
 final class FPCS_Frontend_Lost_Password {
 	
-	private $accountslug;
-	private $loginslug;
-	private $lostslug;
+	const SLUG_ACCOUNT = '/account/';
+	const SLUG_LOGIN = '/account/login/';
+	const SLUG_LOST = '/account/lost-password/';
 	
 	public function __construct() {
-		$this->accountslug = '/account/';
-		$this->loginslug = '/account/login/';
-		$this->lostslug = '/account/lost-password/';
 		add_action('admin_init', array($this, 'admin_profile_block_page'), 1);
 		add_action('init', array($this, 'front_lost_password_rewrite'));
 		add_action('lostpassword_post', array($this, 'front_lost_password_validate_username'), 99);
-		add_filter('lostpassword_url', function($url) { return site_url($this->lostslug); });
+		add_filter('lostpassword_url', function($url) { return site_url(self::SLUG_LOST); });
 		add_filter('query_vars', array($this, 'front_lost_password_query_vars'), 10, 1);
 		add_filter('retrieve_password_message', array($this, 'front_lost_password_email_message'), 10, 4);
 		add_filter('show_admin_bar', array($this, 'front_show_admin_bar'));
@@ -40,7 +37,7 @@ final class FPCS_Frontend_Lost_Password {
 	}
 	
 	public function front_lost_password_email_message($message, $key, $user_login, $user_data) {
-		$link = site_url($this->lostslug.'reset/?key='.rawurlencode($key).'&login='.rawurlencode($user_login));
+		$link = site_url(self::SLUG_LOST.'reset/?key='.rawurlencode($key).'&login='.rawurlencode($user_login));
 		
 		$message = __('Someone requested that the password be reset for your '.get_bloginfo('name').' account.') . "<br><br>\r\n\r\n";
 		$message .= __('If you did not make this request, or it was accidental, just ignore this email and nothing will happen.') . "<br><br>\r\n\r\n";
@@ -52,7 +49,7 @@ final class FPCS_Frontend_Lost_Password {
 	
 	public function front_lost_password_shortcode() {
 		if(is_user_logged_in()) {
-			$output = '<div class="text-center">You\'re already logged in. To change your password, visit your <a href="'.$this->accountslug.'">Account</a> page.</div>';
+			$output = '<div class="text-center">You\'re already logged in. To change your password, visit your <a href="'.self::SLUG_ACCOUNT.'">Account</a> page.</div>';
 		} else {
 			$data = get_query_var('d', '');
 			$output = '<div class="text-center">'."\n";
@@ -107,7 +104,7 @@ final class FPCS_Frontend_Lost_Password {
 					}
 					if ( ! $user || is_wp_error( $user ) ) {
 						setcookie( $rp_cookie, ' ', time() - YEAR_IN_SECONDS, $rp_path, COOKIE_DOMAIN, is_ssl(), true );
-						wp_redirect( site_url( $this->lostslug.'invalid/' ) );
+						wp_redirect( site_url( self::SLUG_LOST.'invalid/' ) );
 						exit;
 					}
 					$errors = new WP_Error();
@@ -126,7 +123,7 @@ final class FPCS_Frontend_Lost_Password {
 					if ( ( ! $errors->get_error_code() ) && isset( $_POST['pass1'] ) && !empty( $_POST['pass1'] ) ) {
 						reset_password($user, $_POST['pass1']);
 						setcookie( $rp_cookie, ' ', time() - YEAR_IN_SECONDS, $rp_path, COOKIE_DOMAIN, is_ssl(), true );
-						$output .= '<p class="bg-success text-success">Your password was successfully reset. You may now <a href="'.$this->loginslug.'">log in</a>.</p></div>';
+						$output .= '<p class="bg-success text-success">Your password was successfully reset. You may now <a href="'.self::SLUG_LOGIN.'">log in</a>.</p></div>';
 					} else {
 						// End WP core code
 						if($errors->get_error_code()) {
@@ -138,7 +135,7 @@ final class FPCS_Frontend_Lost_Password {
 						}
 						ob_start();
 						?>
-						<form name="resetpassform" id="resetpassform" class="form-horizontal" action="<?php echo esc_url(site_url($this->lostslug.'reset/', 'login_post')); ?>" method="post" autocomplete="off">
+						<form name="resetpassform" id="resetpassform" class="form-horizontal" action="<?php echo esc_url(site_url(self::SLUG_LOST.'reset/', 'login_post')); ?>" method="post" autocomplete="off">
 							<input type="hidden" id="user_login" value="<?php echo esc_attr( $rp_login ); ?>" autocomplete="off">
 							<div class="form-group">
 								<div class="col-xs-12">Your username is: <strong><?php echo $rp_login; ?></strong></div>
@@ -200,7 +197,7 @@ final class FPCS_Frontend_Lost_Password {
 		}
 		
 		if($reject) {
-			wp_redirect(site_url($this->lostslug.'retry/'));
+			wp_redirect(site_url(self::SLUG_LOST.'retry/'));
 			exit;
 		}
 	}
