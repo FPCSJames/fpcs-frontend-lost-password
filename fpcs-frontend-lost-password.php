@@ -1,7 +1,7 @@
 <?php
 /*
  * Plugin Name: FPCS Frontend Lost Password
- * Version: 1.0
+ * Version: 1.0.1
  * Description: Add a lost password shortcode for frontend usage.
  * Author: James M. Joyce, Flashpoint Computer Services, LLC
  * Author URI: http://www.flashpointcs.net
@@ -14,18 +14,16 @@ final class FPCS_Frontend_Lost_Password {
 	
 	private $accountslug;
 	private $loginslug;
-	private $lostpagename;
 	private $lostslug;
 	
 	public function __construct() {
 		$this->accountslug = '/account/';
 		$this->loginslug = '/account/login/';
-		$this->lostpagename = 'lost-password';
-		$this->lostslug = 'account/lost-password';
+		$this->lostslug = '/account/lost-password/';
 		add_action('admin_init', array($this, 'admin_profile_block_page'), 1);
 		add_action('init', array($this, 'front_lost_password_rewrite'));
 		add_action('lostpassword_post', array($this, 'front_lost_password_validate_username'), 99);
-		add_filter('lostpassword_url', function($url) { return site_url('/'.$this->lostslug.'/'); });
+		add_filter('lostpassword_url', function($url) { return site_url($this->lostslug); });
 		add_filter('query_vars', array($this, 'front_lost_password_query_vars'), 10, 1);
 		add_filter('retrieve_password_message', array($this, 'front_lost_password_email_message'), 10, 4);
 		add_filter('show_admin_bar', array($this, 'front_show_admin_bar'));
@@ -41,7 +39,7 @@ final class FPCS_Frontend_Lost_Password {
 	}
 	
 	public function front_lost_password_email_message($message, $key, $user_login, $user_data) {
-		$link = site_url($this->lostslug.'/reset/?key='.rawurlencode($key).'&login='.rawurlencode($user_login));
+		$link = site_url($this->lostslug.'reset/?key='.rawurlencode($key).'&login='.rawurlencode($user_login));
 		
 		$message = __('Someone requested that the password be reset for your '.get_bloginfo('name').' account.') . "<br><br>\r\n\r\n";
 		$message .= __('If you did not make this request, or it was accidental, just ignore this email and nothing will happen.') . "<br><br>\r\n\r\n";
@@ -108,7 +106,7 @@ final class FPCS_Frontend_Lost_Password {
 					}
 					if ( ! $user || is_wp_error( $user ) ) {
 						setcookie( $rp_cookie, ' ', time() - YEAR_IN_SECONDS, $rp_path, COOKIE_DOMAIN, is_ssl(), true );
-						wp_redirect( site_url( $this->lostslug.'/invalid/' ) );
+						wp_redirect( site_url( $this->lostslug.'invalid/' ) );
 						exit;
 					}
 					$errors = new WP_Error();
@@ -139,7 +137,7 @@ final class FPCS_Frontend_Lost_Password {
 						}
 						ob_start();
 						?>
-						<form name="resetpassform" id="resetpassform" class="form-horizontal" action="<?php echo esc_url(site_url($this->lostslug.'/reset/', 'login_post')); ?>" method="post" autocomplete="off">
+						<form name="resetpassform" id="resetpassform" class="form-horizontal" action="<?php echo esc_url(site_url($this->lostslug.'reset/', 'login_post')); ?>" method="post" autocomplete="off">
 							<input type="hidden" id="user_login" value="<?php echo esc_attr( $rp_login ); ?>" autocomplete="off">
 							<div class="form-group">
 								<div class="col-xs-12">Your username is: <strong><?php echo $rp_login; ?></strong></div>
@@ -201,7 +199,7 @@ final class FPCS_Frontend_Lost_Password {
 		}
 		
 		if($reject) {
-			wp_redirect(site_url('/'.$this->lostslug.'/retry/'));
+			wp_redirect(site_url($this->lostslug.'retry/'));
 			exit;
 		}
 	}
